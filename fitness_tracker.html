@@ -1,0 +1,2663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Weekly Fitness Tracker</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #1a1a2e;
+      color: #eee;
+      min-height: 100vh;
+      padding-bottom: 80px;
+    }
+    
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 20px 15px;
+      text-align: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    
+    .header h1 {
+      font-size: 1.4rem;
+      margin-bottom: 5px;
+    }
+    
+    .week-selector {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    
+    .week-selector input {
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: none;
+      font-size: 1rem;
+      background: rgba(255,255,255,0.2);
+      color: white;
+    }
+    
+    .tabs {
+      display: flex;
+      background: #16213e;
+      overflow-x: auto;
+      position: sticky;
+      top: 85px;
+      z-index: 99;
+    }
+    
+    .tab {
+      flex: 1;
+      min-width: 50px;
+      padding: 12px 8px;
+      text-align: center;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border-bottom: 3px solid transparent;
+      transition: all 0.2s;
+    }
+    
+    .tab.active {
+      background: #1a1a2e;
+      border-bottom-color: #667eea;
+    }
+    
+    .tab .day-status {
+      font-size: 0.7rem;
+      margin-top: 2px;
+    }
+    
+    .content {
+      padding: 15px;
+    }
+    
+    .day-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 15px;
+      border-radius: 12px;
+      margin-bottom: 15px;
+    }
+    
+    .day-header h2 {
+      font-size: 1.2rem;
+      margin-bottom: 5px;
+    }
+    
+    .day-header .subtitle {
+      font-size: 0.85rem;
+      opacity: 0.9;
+    }
+    
+    .day-stats {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    
+    .stat-box {
+      background: #16213e;
+      padding: 12px;
+      border-radius: 10px;
+      text-align: center;
+    }
+    
+    .stat-box .value {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #667eea;
+    }
+    
+    .stat-box .label {
+      font-size: 0.75rem;
+      opacity: 0.7;
+      margin-top: 2px;
+    }
+    
+    .stat-box.good .value { color: #4ade80; }
+    .stat-box.warning .value { color: #fbbf24; }
+    .stat-box.bad .value { color: #f87171; }
+    
+    .section {
+      background: #16213e;
+      border-radius: 12px;
+      margin-bottom: 15px;
+      overflow: hidden;
+    }
+    
+    .section-header {
+      background: #0f3460;
+      padding: 12px 15px;
+      font-weight: 600;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .section-header .count {
+      background: #667eea;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+    }
+    
+    .item {
+      display: flex;
+      align-items: center;
+      padding: 12px 15px;
+      border-bottom: 1px solid #1a1a2e;
+      gap: 12px;
+    }
+    
+    .item:last-child {
+      border-bottom: none;
+    }
+    
+    .item-toggle {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 2px solid #444;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.2rem;
+      flex-shrink: 0;
+      transition: all 0.2s;
+    }
+    
+    .item-toggle.done {
+      background: #4ade80;
+      border-color: #4ade80;
+    }
+    
+    .item-toggle.missed {
+      background: #f87171;
+      border-color: #f87171;
+    }
+    
+    .item-details {
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .item-time {
+      font-size: 0.75rem;
+      color: #667eea;
+      margin-bottom: 2px;
+    }
+    
+    .item-name {
+      font-size: 0.95rem;
+      margin-bottom: 2px;
+    }
+    
+    .item-meta {
+      font-size: 0.8rem;
+      opacity: 0.6;
+    }
+    
+    .sleep-tracker {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 15px;
+    }
+    
+    .sleep-toggle {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      border: 2px solid #444;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.5rem;
+      transition: all 0.2s;
+    }
+    
+    .sleep-toggle.done {
+      background: #4ade80;
+      border-color: #4ade80;
+    }
+    
+    .sleep-toggle.missed {
+      background: #f87171;
+      border-color: #f87171;
+    }
+    
+    .notes-section textarea {
+      width: 100%;
+      background: #1a1a2e;
+      border: none;
+      padding: 12px;
+      color: #eee;
+      font-size: 0.95rem;
+      min-height: 80px;
+      resize: vertical;
+      border-radius: 0 0 12px 12px;
+    }
+    
+    .summary-tab {
+      padding: 15px;
+    }
+    
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    
+    .summary-card {
+      background: #16213e;
+      padding: 15px;
+      border-radius: 12px;
+      text-align: center;
+    }
+    
+    .summary-card .value {
+      font-size: 2rem;
+      font-weight: bold;
+      color: #667eea;
+    }
+    
+    .summary-card .label {
+      font-size: 0.85rem;
+      opacity: 0.7;
+      margin-top: 5px;
+    }
+    
+    .summary-card.good .value { color: #4ade80; }
+    
+    .weight-input {
+      background: #16213e;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 15px;
+      text-align: center;
+    }
+    
+    .weight-input label {
+      display: block;
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+    
+    .weight-input input {
+      width: 120px;
+      padding: 12px;
+      font-size: 1.5rem;
+      text-align: center;
+      border: none;
+      border-radius: 8px;
+      background: #1a1a2e;
+      color: #eee;
+    }
+    
+    .week-breakdown {
+      background: #16213e;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    
+    .week-breakdown-header {
+      background: #0f3460;
+      padding: 12px 15px;
+      font-weight: 600;
+    }
+    
+    .week-day-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 15px;
+      border-bottom: 1px solid #1a1a2e;
+    }
+    
+    .week-day-row:last-child {
+      border-bottom: none;
+    }
+    
+    .week-day-row .day-name {
+      font-weight: 600;
+    }
+    
+    .week-day-row .day-stats-mini {
+      display: flex;
+      gap: 15px;
+      font-size: 0.85rem;
+    }
+    
+    .week-day-row .day-stats-mini span {
+      opacity: 0.7;
+    }
+    
+    .reset-btn {
+      display: block;
+      width: 100%;
+      padding: 15px;
+      margin-top: 20px;
+      background: #f87171;
+      border: none;
+      border-radius: 12px;
+      color: white;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    
+    .overview-grid {
+      background: #16213e;
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 15px;
+    }
+    
+    .overview-row {
+      display: grid;
+      grid-template-columns: 70px repeat(7, 1fr);
+      border-bottom: 1px solid #1a1a2e;
+    }
+    
+    .overview-row:last-child {
+      border-bottom: none;
+    }
+    
+    .overview-cell {
+      padding: 8px 4px;
+      text-align: center;
+      font-size: 0.7rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .overview-cell.header {
+      background: #0f3460;
+      font-weight: 600;
+      font-size: 0.75rem;
+    }
+    
+    .overview-cell.time-col {
+      background: #0f3460;
+      font-size: 0.65rem;
+    }
+    
+    .overview-cell.workout {
+      background: rgba(74, 222, 128, 0.2);
+    }
+    
+    .overview-cell.active {
+      background: rgba(251, 191, 36, 0.2);
+    }
+    
+    .mini-status {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      cursor: pointer;
+    }
+    
+    .mini-status.done {
+      background: #4ade80;
+    }
+    
+    .mini-status.missed {
+      background: #f87171;
+    }
+    
+    .mini-status.pending {
+      background: #444;
+    }
+    
+    .weigh-in-input {
+      padding: 15px;
+    }
+    
+    .weigh-in-input input {
+      width: 100%;
+      padding: 12px;
+      font-size: 1.2rem;
+      text-align: center;
+      border: none;
+      border-radius: 8px;
+      background: #1a1a2e;
+      color: #eee;
+    }
+    
+    .or-label {
+      padding: 8px 15px;
+      font-size: 0.75rem;
+      color: #667eea;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      background: rgba(102, 126, 234, 0.1);
+    }
+    
+    .or-divider {
+      text-align: center;
+      padding: 4px 15px;
+      font-size: 0.7rem;
+      color: #888;
+      background: rgba(255,255,255,0.02);
+    }
+    
+    .grouped-item {
+      background: rgba(102, 126, 234, 0.05);
+    }
+    
+    .lift-weight-input {
+      flex-shrink: 0;
+    }
+    
+    .lift-weight-input input {
+      width: 70px;
+      padding: 8px;
+      font-size: 0.9rem;
+      text-align: center;
+      border: 1px solid #444;
+      border-radius: 8px;
+      background: #1a1a2e;
+      color: #eee;
+    }
+    
+    .lift-weight-input input:focus {
+      border-color: #667eea;
+      outline: none;
+    }
+    
+    .set-log-area {
+      padding: 8px 15px 12px 60px;
+      border-bottom: 1px solid #1a1a2e;
+      background: rgba(102, 126, 234, 0.03);
+    }
+    
+    .set-log-header {
+      display: grid;
+      grid-template-columns: 38px 1fr 1fr;
+      gap: 8px;
+      font-size: 0.7rem;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+      padding: 0 2px;
+    }
+    
+    .set-log-row {
+      display: grid;
+      grid-template-columns: 38px 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 4px;
+      align-items: center;
+    }
+    
+    .set-log-row .set-label {
+      font-size: 0.75rem;
+      color: #667eea;
+      font-weight: 600;
+      text-align: center;
+    }
+    
+    .set-log-row input {
+      width: 100%;
+      padding: 7px 6px;
+      font-size: 0.85rem;
+      text-align: center;
+      border: 1px solid #333;
+      border-radius: 6px;
+      background: #1a1a2e;
+      color: #eee;
+      transition: border-color 0.2s;
+    }
+    
+    .set-log-row input:focus {
+      border-color: #667eea;
+      outline: none;
+    }
+    
+    .set-log-row input.has-value {
+      border-color: #4ade8055;
+    }
+    
+    .set-log-summary {
+      font-size: 0.75rem;
+      color: #888;
+      padding-top: 4px;
+      text-align: right;
+    }
+    
+    .set-log-summary .top-set {
+      color: #667eea;
+      font-weight: 600;
+    }
+    
+    /* Strength Progress v2 */
+    .strength-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+    }
+    
+    .strength-table th {
+      padding: 10px 8px;
+      text-align: left;
+      color: #888;
+      font-weight: 600;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid #333;
+    }
+    
+    .strength-table th:not(:first-child) {
+      text-align: center;
+    }
+    
+    .strength-table td {
+      padding: 10px 8px;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      vertical-align: middle;
+    }
+    
+    .strength-table td:not(:first-child) {
+      text-align: center;
+    }
+    
+    .strength-table tr:last-child td {
+      border-bottom: none;
+    }
+    
+    .strength-lift-name {
+      font-weight: 600;
+      color: #ddd;
+    }
+    
+    .strength-lift-day {
+      font-size: 0.7rem;
+      color: #666;
+    }
+    
+    .strength-val {
+      font-weight: 600;
+      color: #eee;
+    }
+    
+    .strength-val .reps {
+      font-weight: 400;
+      color: #888;
+      font-size: 0.75rem;
+    }
+    
+    .strength-val.empty {
+      color: #444;
+    }
+    
+    .strength-delta {
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 4px;
+      display: inline-block;
+      min-width: 40px;
+    }
+    
+    .strength-delta.up {
+      color: #4ade80;
+      background: rgba(74, 222, 128, 0.1);
+    }
+    
+    .strength-delta.down {
+      color: #f87171;
+      background: rgba(248, 113, 113, 0.1);
+    }
+    
+    .strength-delta.same {
+      color: #888;
+    }
+    
+    .e1rm-label {
+      font-size: 0.68rem;
+      color: #667eea;
+      margin-top: 2px;
+      font-weight: 500;
+    }
+    
+    .e1rm-explainer {
+      font-size: 0.72rem;
+      color: #666;
+      padding: 8px 10px 4px;
+      text-align: center;
+      font-style: italic;
+    }
+    
+    .meal-wrapper {
+      position: relative;
+    }
+    
+    .edit-meal-btn {
+      padding: 8px;
+      cursor: pointer;
+      opacity: 0.5;
+      font-size: 0.9rem;
+    }
+    
+    .edit-meal-btn:hover {
+      opacity: 1;
+    }
+    
+    .custom-meal {
+      background: rgba(102, 126, 234, 0.1);
+      border-left: 3px solid #667eea;
+    }
+    
+    .custom-badge {
+      font-size: 0.6rem;
+      background: #667eea;
+      color: white;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+    
+    .custom-meal-editor {
+      display: none;
+      padding: 12px 15px;
+      background: #0f3460;
+      border-top: 1px solid #1a1a2e;
+    }
+    
+    .custom-meal-editor.show {
+      display: block;
+    }
+    
+    .custom-meal-default {
+      font-size: 0.75rem;
+      color: #888;
+      margin-bottom: 10px;
+    }
+    
+    .custom-meal-editor input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 8px;
+      border: 1px solid #444;
+      border-radius: 6px;
+      background: #1a1a2e;
+      color: #eee;
+      font-size: 0.95rem;
+    }
+    
+    .custom-meal-inputs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    
+    .custom-meal-inputs input {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #444;
+      border-radius: 6px;
+      background: #1a1a2e;
+      color: #eee;
+      font-size: 0.95rem;
+    }
+    
+    .custom-meal-actions {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .custom-meal-actions button {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      background: #667eea;
+      color: white;
+    }
+    
+    .custom-meal-actions button.secondary {
+      background: #444;
+      color: #ccc;
+    }
+    
+    .history-section {
+      margin-top: 20px;
+    }
+    
+    .history-card {
+      background: #16213e;
+      border-radius: 12px;
+      margin-bottom: 10px;
+      overflow: hidden;
+    }
+    
+    .history-card-header {
+      background: #0f3460;
+      padding: 12px 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+    }
+    
+    .history-card-header .week-date {
+      font-weight: 600;
+    }
+    
+    .history-card-header .week-weight {
+      font-size: 0.9rem;
+      color: #667eea;
+    }
+    
+    .history-card-body {
+      padding: 12px 15px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      text-align: center;
+      font-size: 0.85rem;
+    }
+    
+    .history-stat {
+      padding: 8px;
+      background: #1a1a2e;
+      border-radius: 8px;
+    }
+    
+    .history-stat .value {
+      font-weight: bold;
+      color: #667eea;
+    }
+    
+    .history-stat.good .value {
+      color: #4ade80;
+    }
+    
+    .weight-chart {
+      background: #16213e;
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 15px;
+    }
+    
+    .weight-chart-header {
+      font-weight: 600;
+      margin-bottom: 15px;
+    }
+    
+    .weight-chart-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 8px;
+      font-size: 0.85rem;
+    }
+    
+    .weight-chart-day {
+      width: 40px;
+      font-weight: 600;
+    }
+    
+    .weight-chart-bar-container {
+      flex: 1;
+      height: 24px;
+      background: #1a1a2e;
+      border-radius: 4px;
+      margin: 0 10px;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .weight-chart-bar {
+      height: 100%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 4px;
+      transition: width 0.3s;
+    }
+    
+    .weight-chart-value {
+      width: 60px;
+      text-align: right;
+    }
+    
+    .strength-progress {
+      padding: 10px;
+    }
+    
+    .strength-card {
+      background: #1a1a2e;
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 10px;
+    }
+    
+    .strength-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    
+    .strength-name {
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+    
+    .strength-change {
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    
+    .strength-stats {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      color: #888;
+      margin-bottom: 10px;
+    }
+    
+    .mini-chart {
+      display: flex;
+      align-items: flex-end;
+      gap: 4px;
+      height: 40px;
+    }
+    
+    .mini-bar {
+      flex: 1;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 3px 3px 0 0;
+      min-height: 4px;
+    }
+    
+    .weight-loss-chart {
+      padding: 15px;
+    }
+    
+    .weight-loss-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      margin-bottom: 15px;
+      color: #aaa;
+    }
+    
+    .weight-loss-svg {
+      display: block;
+      max-width: 100%;
+    }
+
+    .ingredient-toggle-btn {
+      margin-left: 48px;
+      padding: 4px 10px;
+      font-size: 0.75rem;
+      color: #888;
+      cursor: pointer;
+      user-select: none;
+      display: inline-block;
+      border-radius: 4px;
+      transition: background 0.2s;
+    }
+    .ingredient-toggle-btn:hover {
+      background: rgba(255,255,255,0.05);
+    }
+    .ingredient-list {
+      margin-left: 48px;
+      padding: 6px 0 10px 0;
+      display: none;
+    }
+    .ingredient-list.expanded {
+      display: block;
+    }
+    .ingredient-row {
+      display: flex;
+      align-items: center;
+      padding: 5px 0;
+      font-size: 0.82rem;
+      color: #bbb;
+      gap: 8px;
+    }
+    .ingredient-row.excluded {
+      opacity: 0.35;
+    }
+    .ingredient-row.excluded .ing-name {
+      text-decoration: line-through;
+    }
+    .ing-toggle {
+      width: 22px;
+      height: 22px;
+      border-radius: 5px;
+      border: 2px solid #555;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 0.7rem;
+      flex-shrink: 0;
+      transition: all 0.15s;
+    }
+    .ing-toggle.included {
+      border-color: #4ade80;
+      color: #4ade80;
+    }
+    .ing-toggle.excluded {
+      border-color: #f87171;
+      color: #f87171;
+    }
+    .ing-name {
+      flex: 1;
+      min-width: 0;
+    }
+    .ing-amount {
+      color: #666;
+      font-size: 0.75rem;
+      white-space: nowrap;
+    }
+    .ing-meta {
+      font-size: 0.75rem;
+      color: #777;
+      white-space: nowrap;
+      text-align: right;
+      min-width: 85px;
+    }
+    .ing-multiplier {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      flex-shrink: 0;
+    }
+    .ing-multiplier input {
+      width: 38px;
+      padding: 2px 4px;
+      font-size: 0.72rem;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid #444;
+      border-radius: 4px;
+      color: #ddd;
+      text-align: center;
+    }
+    .ing-multiplier input:focus {
+      border-color: #667eea;
+      outline: none;
+    }
+    .ing-multiplier-label {
+      font-size: 0.68rem;
+      color: #666;
+    }
+    .ing-multiplier input.modified {
+      border-color: #667eea;
+      color: #a5b4fc;
+    }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  
+  <script>
+    // Data structure
+    const weekData = {
+      monday: {
+        title: "MONDAY",
+        subtitle: "Upper Body",
+        cardio: "5:45 AM (20 min elliptical/bike)",
+        targetCal: 2227,
+        targetProtein: 143,
+        meals: [
+          { id: "mon-m1", time: "7:00 AM", name: "Fairlife shake + banana", cal: 275, protein: 27, ingredients: [
+            { id: "mon-m1-i0", name: "Fairlife Core Power shake", amount: "1 bottle (340ml)", cal: 170, protein: 26 },
+            { id: "mon-m1-i1", name: "Banana", amount: "1 medium (~120g)", cal: 105, protein: 1 }
+          ]},
+          { id: "mon-m2", time: "8:30 AM", name: "Greek yogurt + mango + honey", cal: 240, protein: 19, ingredients: [
+            { id: "mon-m2-i0", name: "Fage 0% Greek yogurt", amount: "230g", cal: 120, protein: 18 },
+            { id: "mon-m2-i1", name: "Mango chunks", amount: "80g", cal: 60, protein: 1 },
+            { id: "mon-m2-i2", name: "Honey", amount: "1 tbsp (21g)", cal: 60, protein: 0 }
+          ]},
+          { id: "mon-m3", time: "12:00 PM", name: "Drug eggs over rice", cal: 384, protein: 21, ingredients: [
+            { id: "mon-m3-i0", name: "Soft boiled eggs (marinated)", amount: "3 large (~150g)", cal: 210, protein: 18 },
+            { id: "mon-m3-i1", name: "Costco rice bowl (45% eaten)", amount: "~145g cooked", cal: 144, protein: 3 },
+            { id: "mon-m3-i2", name: "Soy/garlic/herb marinade", amount: "1 tbsp", cal: 30, protein: 0 }
+          ]},
+          { id: "mon-m4", time: "2:30 PM", name: "Fairlife shake", cal: 170, protein: 26, ingredients: [
+            { id: "mon-m4-i0", name: "Fairlife Core Power shake", amount: "1 bottle (340ml)", cal: 170, protein: 26 }
+          ]},
+          { id: "mon-m5", time: "6:00 PM", name: "Salmon bowl", cal: 1158, protein: 50, ingredients: [
+            { id: "mon-m5-i0", name: "Frozen salmon fillet (Costco)", amount: "1 fillet (~170g)", cal: 350, protein: 34 },
+            { id: "mon-m5-i1", name: "Broccoli", amount: "1 crown (~150g)", cal: 55, protein: 4 },
+            { id: "mon-m5-i2", name: "Zucchini", amount: "1 medium (~200g)", cal: 30, protein: 2 },
+            { id: "mon-m5-i3", name: "Green onions", amount: "1 bunch (~30g)", cal: 10, protein: 1 },
+            { id: "mon-m5-i4", name: "White jasmine rice (uncooked)", amount: "95g uncooked", cal: 320, protein: 6 },
+            { id: "mon-m5-i5", name: "Avocado", amount: "80g (measured)", cal: 128, protein: 2 },
+            { id: "mon-m5-i6", name: "Olive oil", amount: "2 tbsp", cal: 240, protein: 0 },
+            { id: "mon-m5-i7", name: "Soy sauce", amount: "1 tbsp", cal: 10, protein: 1 },
+            { id: "mon-m5-i8", name: "Everything bagel seasoning", amount: "1 tsp", cal: 15, protein: 0 }
+          ]}
+        ],
+        workouts: [
+          { id: "mon-w1", name: "7 min warmup (stairmaster/elliptical)" },
+          { id: "mon-w2", name: "3x8 Incline Bench", track: true },
+          { id: "mon-w3", name: "3x8 Lat Pulldowns", track: true },
+          { id: "mon-w4", name: "3x8 Shoulder Press", track: true },
+          { id: "mon-w5", name: "2x12 Rear Delt Flys", track: true },
+          { id: "mon-w7", name: "3x10 Preacher Curls", track: true },
+          { id: "mon-w8", name: "3x10 Tricep Pushdowns", track: true }
+        ],
+        cardioSession: { id: "mon-cardio", name: "20 min AM Cardio" }
+      },
+      tuesday: {
+        title: "TUESDAY",
+        subtitle: "Lower Body + Abs",
+        cardio: "5:45 AM (20 min elliptical/bike)",
+        targetCal: 2217,
+        targetProtein: 150,
+        meals: [
+          { id: "tue-m1", time: "7:00 AM", name: "Fairlife shake + banana", cal: 275, protein: 27, ingredients: [
+            { id: "tue-m1-i0", name: "Fairlife Core Power shake", amount: "1 bottle (340ml)", cal: 170, protein: 26 },
+            { id: "tue-m1-i1", name: "Banana", amount: "1 medium (~120g)", cal: 105, protein: 1 }
+          ]},
+          { id: "tue-m2", time: "11:00 AM", name: "Drug eggs over rice", cal: 384, protein: 21, ingredients: [
+            { id: "tue-m2-i0", name: "Soft boiled eggs (marinated)", amount: "3 large (~150g)", cal: 210, protein: 18 },
+            { id: "tue-m2-i1", name: "Costco rice bowl (45% eaten)", amount: "~145g cooked", cal: 144, protein: 3 },
+            { id: "tue-m2-i2", name: "Soy/garlic/herb marinade", amount: "1 tbsp", cal: 30, protein: 0 }
+          ]},
+          { id: "tue-m3", time: "6:00 PM", name: "Orange chicken bowl", cal: 1093, protein: 59, ingredients: [
+            { id: "tue-m3-i0", name: "TJ's Mandarin Orange Chicken", amount: "60% of bag (~340g)", cal: 768, protein: 53 },
+            { id: "tue-m3-i1", name: "White jasmine rice (uncooked)", amount: "95g uncooked", cal: 320, protein: 6 },
+            { id: "tue-m3-i2", name: "Green onion greens", amount: "small garnish", cal: 5, protein: 0 }
+          ]},
+          { id: "tue-m4", time: "7:30 PM", name: "Ninja Creami (chocolate shake)", cal: 465, protein: 43, ingredients: [
+            { id: "tue-m4-i0", name: "Fairlife Core Power shake", amount: "1 bottle (340ml)", cal: 170, protein: 26 },
+            { id: "tue-m4-i1", name: "Fage 0% Greek yogurt", amount: "115g", cal: 65, protein: 10 },
+            { id: "tue-m4-i2", name: "PBFit peanut powder", amount: "2 tbsp (16g)", cal: 50, protein: 4 },
+            { id: "tue-m4-i3", name: "PB M&Ms", amount: "8 pieces", cal: 70, protein: 1 },
+            { id: "tue-m4-i4", name: "Reese's PB cup", amount: "1 cup", cal: 110, protein: 2 }
+          ]}
+        ],
+        workouts: [
+          { id: "tue-w1", name: "7 min warmup (stairmaster/elliptical)" },
+          { id: "tue-w1b", name: "Banded lateral walks (2x15 each direction)" },
+          { id: "tue-w2", name: "3x6 Hack Squats", track: true },
+          { id: "tue-w3", name: "3x8 Leg Curl", track: true },
+          { id: "tue-w4", name: "3x10 Leg Extensions", track: true },
+          { id: "tue-w5", name: "3x12 Hip Adduction", track: true },
+          { id: "tue-w6", name: "3x8 Lunges", track: true },
+          { id: "tue-w7", name: "3x10 Decline Crunch" }
+        ],
+        cardioSession: { id: "tue-cardio", name: "20 min AM Cardio" }
+      },
+      wednesday: {
+        title: "WEDNESDAY",
+        subtitle: "Rest (Golf/Basketball Optional)",
+        cardio: "20 min if golf + walks",
+        targetCal: 1569,
+        targetProtein: 147,
+        meals: [
+          { id: "wed-m1", time: "7:30 AM", name: "3 eggs, cheese, 3 sausages", cal: 520, protein: 34, ingredients: [
+            { id: "wed-m1-i0", name: "Eggs", amount: "3 large (~150g)", cal: 210, protein: 18 },
+            { id: "wed-m1-i1", name: "Cheddar cheese", amount: "28g", cal: 110, protein: 7 },
+            { id: "wed-m1-i2", name: "Pork link sausages", amount: "3 links (~135g)", cal: 200, protein: 9 }
+          ]},
+          { id: "wed-m2", time: "2:30 PM", name: "Yogurt parfait", cal: 475, protein: 39, ingredients: [
+            { id: "wed-m2-i0", name: "Fairlife Core Power shake", amount: "1 bottle (340ml)", cal: 170, protein: 26 },
+            { id: "wed-m2-i1", name: "Fage 0% Greek yogurt", amount: "115g", cal: 60, protein: 9 },
+            { id: "wed-m2-i2", name: "Fruit cup", amount: "1 cup (~150g)", cal: 60, protein: 0 },
+            { id: "wed-m2-i3", name: "Granola", amount: "30g", cal: 120, protein: 3 },
+            { id: "wed-m2-i4", name: "Honey", amount: "1 tbsp (21g)", cal: 65, protein: 1 }
+          ]},
+          { id: "wed-m3", time: "4:30 PM", name: "Whey protein shake", cal: 200, protein: 37, ingredients: [
+            { id: "wed-m3-i0", name: "ON Whey Protein (vanilla)", amount: "1 scoop (31g)", cal: 120, protein: 24 },
+            { id: "wed-m3-i1", name: "Fairlife milk", amount: "8 fl oz", cal: 80, protein: 13 }
+          ]},
+          { id: "wed-m4", time: "6:00 PM", name: "Ninja Creami (PB&J ice cream)", cal: 374, protein: 37, ingredients: [
+            { id: "wed-m4-i0", name: "Fage 0% Greek yogurt", amount: "125g", cal: 68, protein: 12 },
+            { id: "wed-m4-i1", name: "Frozen mangos", amount: "~40g", cal: 25, protein: 0 },
+            { id: "wed-m4-i2", name: "Stahlbush blackberries", amount: "70g", cal: 35, protein: 1 },
+            { id: "wed-m4-i3", name: "ON Whey protein (vanilla)", amount: "3/4 scoop (~23g)", cal: 90, protein: 18 },
+            { id: "wed-m4-i4", name: "Peanut butter", amount: "~12g", cal: 71, protein: 2 },
+            { id: "wed-m4-i5", name: "Chia seeds", amount: "~3/4 tsp", cal: 15, protein: 1 },
+            { id: "wed-m4-i6", name: "Fairlife milk", amount: "2 fl oz", cal: 20, protein: 3 },
+            { id: "wed-m4-i7", name: "Homemade whipped cream", amount: "small dollop", cal: 50, protein: 0 }
+          ]}
+        ],
+        workouts: [
+          { id: "wed-w1", name: "Golf simulator", group: "wed-activity" },
+          { id: "wed-w2", name: "Basketball drills", group: "wed-activity" },
+          { id: "wed-w3", name: "Full rest if sore", group: "wed-activity" }
+        ],
+        cardioSession: [
+          { id: "wed-cardio1", name: "20 min Cardio", group: "wed-cardio" },
+          { id: "wed-cardio2", name: "Already got cardio from basketball", group: "wed-cardio" }
+        ],
+        optional: true
+      },
+      thursday: {
+        title: "THURSDAY",
+        subtitle: "Push",
+        cardio: "15-20 min incline walk post-lift",
+        targetCal: 2060,
+        targetProtein: 161,
+        meals: [
+          { id: "thu-m2", time: "8:30 AM", name: "Greek yogurt + mango + honey", cal: 240, protein: 19, ingredients: [
+            { id: "thu-m2-i0", name: "Fage 0% Greek yogurt", amount: "230g", cal: 120, protein: 18 },
+            { id: "thu-m2-i1", name: "Mango chunks", amount: "80g", cal: 60, protein: 1 },
+            { id: "thu-m2-i2", name: "Honey", amount: "1 tbsp (21g)", cal: 60, protein: 0 }
+          ]},
+          { id: "thu-m3", time: "2:30 PM", name: "Fairlife + banana + nuts", cal: 375, protein: 33, ingredients: [
+            { id: "thu-m3-i0", name: "Fairlife Core Power shake", amount: "1 bottle (340ml)", cal: 170, protein: 26 },
+            { id: "thu-m3-i1", name: "Banana", amount: "1 medium (~120g)", cal: 105, protein: 1 },
+            { id: "thu-m3-i2", name: "Mixed nuts", amount: "28g", cal: 100, protein: 6 }
+          ]},
+          { id: "thu-m4", time: "6:00 PM", name: "Chicken bowl", cal: 980, protein: 66, ingredients: [
+            { id: "thu-m4-i0", name: "Chicken breast", amount: "~225g raw", cal: 280, protein: 52 },
+            { id: "thu-m4-i1", name: "Broccolini", amount: "7-9 stems (~175g)", cal: 35, protein: 3 },
+            { id: "thu-m4-i2", name: "Bok choy", amount: "~150g", cal: 20, protein: 2 },
+            { id: "thu-m4-i3", name: "Green onions", amount: "1 bunch (~30g)", cal: 10, protein: 1 },
+            { id: "thu-m4-i4", name: "White jasmine rice (uncooked)", amount: "95g uncooked", cal: 320, protein: 6 },
+            { id: "thu-m4-i5", name: "Chicken broth", amount: "500ml", cal: 15, protein: 2 },
+            { id: "thu-m4-i6", name: "Olive oil", amount: "2.5 tbsp", cal: 300, protein: 0 }
+          ]},
+          { id: "thu-m5", time: "7:30 PM", name: "Ninja Creami (chocolate shake)", cal: 465, protein: 43, ingredients: [
+            { id: "thu-m5-i0", name: "Fairlife Core Power shake", amount: "1 bottle (340ml)", cal: 170, protein: 26 },
+            { id: "thu-m5-i1", name: "Fage 0% Greek yogurt", amount: "115g", cal: 65, protein: 10 },
+            { id: "thu-m5-i2", name: "PBFit peanut powder", amount: "2 tbsp (16g)", cal: 50, protein: 4 },
+            { id: "thu-m5-i3", name: "PB M&Ms", amount: "8 pieces", cal: 70, protein: 1 },
+            { id: "thu-m5-i4", name: "Reese's PB cup", amount: "1 cup", cal: 110, protein: 2 }
+          ]}
+        ],
+        workouts: [
+          { id: "thu-w1", name: "7 min warmup (stairmaster/elliptical)" },
+          { id: "thu-w2", name: "3x6 Bench/Chest Press", track: true },
+          { id: "thu-w3", name: "3x8 Shoulder Press (Machine)", track: true },
+          { id: "thu-w4", name: "3x10 Cable Lat Raises", track: true },
+          { id: "thu-w5", name: "3x10 Cable Chest Flys", track: true },
+          { id: "thu-w5b", name: "3x10 Hanging Leg Raises" },
+          { id: "thu-w6", name: "3x8-10 Dips (assisted)", track: true },
+          { id: "thu-w7", name: "3x10 Tricep Pushdowns", track: true }
+        ],
+        cardioSession: { id: "thu-cardio", name: "15-20 min incline walk (post-lift)" }
+      },
+      friday: {
+        title: "FRIDAY",
+        subtitle: "Pull",
+        cardio: "5:45 AM (20 min elliptical/bike)",
+        targetCal: 1884,
+        targetProtein: 195,
+        meals: [
+          { id: "fri-m1", time: "7:00 AM", name: "Whey protein shake", cal: 200, protein: 37, ingredients: [
+            { id: "fri-m1-i0", name: "ON Whey Protein (vanilla)", amount: "1 scoop (31g)", cal: 120, protein: 24 },
+            { id: "fri-m1-i1", name: "Fairlife milk", amount: "8 fl oz", cal: 80, protein: 13 }
+          ]},
+          { id: "fri-m2", time: "8:30 AM", name: "Greek yogurt + mango + honey", cal: 240, protein: 19, ingredients: [
+            { id: "fri-m2-i0", name: "Fage 0% Greek yogurt", amount: "230g", cal: 120, protein: 18 },
+            { id: "fri-m2-i1", name: "Mango chunks", amount: "80g", cal: 60, protein: 1 },
+            { id: "fri-m2-i2", name: "Honey", amount: "1 tbsp (21g)", cal: 60, protein: 0 }
+          ]},
+          { id: "fri-m3", time: "12:00 PM", name: "Chicken-rice-avocado bowl", cal: 753, protein: 61, ingredients: [
+            { id: "fri-m3-i0", name: "Chicken breast (leftover)", amount: "~170g cooked", cal: 280, protein: 52 },
+            { id: "fri-m3-i1", name: "White jasmine rice (uncooked)", amount: "95g uncooked", cal: 320, protein: 6 },
+            { id: "fri-m3-i2", name: "Avocado", amount: "80g (measured)", cal: 128, protein: 2 },
+            { id: "fri-m3-i3", name: "Everything bagel seasoning", amount: "1 tsp", cal: 15, protein: 0 },
+            { id: "fri-m3-i4", name: "Soy sauce", amount: "1 tbsp", cal: 10, protein: 1 }
+          ]},
+          { id: "fri-m3b", time: "2:00 PM", name: "Fairlife shake", cal: 170, protein: 26, ingredients: [
+            { id: "fri-m3b-i0", name: "Fairlife Core Power shake", amount: "1 bottle (340ml)", cal: 170, protein: 26 }
+          ]},
+          { id: "fri-m4", time: "6:00 PM", name: "Chicken tortilla soup + chips", cal: 521, protein: 52, ingredients: [
+            { id: "fri-m4-i0", name: "Shredded chicken", amount: "210g", cal: 225, protein: 38 },
+            { id: "fri-m4-i1", name: "Chicken broth", amount: "18 fl oz", cal: 23, protein: 3 },
+            { id: "fri-m4-i2", name: "Black beans", amount: "65g", cal: 90, protein: 6 },
+            { id: "fri-m4-i3", name: "Diced tomatoes", amount: "135g", cal: 30, protein: 2 },
+            { id: "fri-m4-i4", name: "Corn", amount: "60g", cal: 45, protein: 2 },
+            { id: "fri-m4-i5", name: "Onion, garlic, spices", amount: "mixed", cal: 38, protein: 0 },
+            { id: "fri-m4-i6", name: "Tortilla chips", amount: "~14g (small handful)", cal: 70, protein: 1 }
+          ]}
+        ],
+        workouts: [
+          { id: "fri-w1", name: "7 min warmup (stairmaster/elliptical)" },
+          { id: "fri-w2", name: "3x8 RDLs", track: true },
+          { id: "fri-w3", name: "3x8 Lat Pulldowns", track: true },
+          { id: "fri-w4", name: "3x8 Machine Row", track: true },
+          { id: "fri-w5", name: "3x8 Hammer Curls", track: true },
+          { id: "fri-w6", name: "2x12 Rear Delt Flys", track: true },
+          { id: "fri-w7", name: "2x10 Shrugs", track: true },
+          { id: "fri-w8", name: "3x12 Preacher Curls", track: true }
+        ],
+        cardioSession: { id: "fri-cardio", name: "20 min AM Cardio" }
+      },
+      saturday: {
+        title: "SATURDAY",
+        subtitle: "Circuit Training",
+        cardio: "Built into circuits",
+        targetCal: 1855,
+        targetProtein: 159,
+        meals: [
+          { id: "sat-m1a", time: "9:30 AM", name: "2 Eggo waffles + 4 eggs", cal: 460, protein: 28, group: "sat-breakfast", ingredients: [
+            { id: "sat-m1a-i0", name: "Eggs", amount: "4 large (~200g)", cal: 280, protein: 24 },
+            { id: "sat-m1a-i1", name: "Eggo waffles", amount: "2 waffles (~70g)", cal: 180, protein: 4 }
+          ]},
+          { id: "sat-m1b", time: "9:30 AM", name: "Cafe breakfast sandwich", cal: 400, protein: 23, group: "sat-breakfast", ingredients: [
+            { id: "sat-m1b-i0", name: "English muffin", amount: "1 whole (~57g)", cal: 130, protein: 5 },
+            { id: "sat-m1b-i1", name: "Bacon", amount: "2 strips (~16g cooked)", cal: 90, protein: 6 },
+            { id: "sat-m1b-i2", name: "Egg", amount: "1 large (~50g)", cal: 70, protein: 6 },
+            { id: "sat-m1b-i3", name: "Cheese", amount: "1 slice (~21g)", cal: 100, protein: 6 },
+            { id: "sat-m1b-i4", name: "Tomato", amount: "1 slice", cal: 10, protein: 0 }
+          ]},
+          { id: "sat-m2", time: "9:30 AM", name: "Whey protein shake", cal: 200, protein: 37, ingredients: [
+            { id: "sat-m2-i0", name: "ON Whey Protein (vanilla)", amount: "1 scoop (31g)", cal: 120, protein: 24 },
+            { id: "sat-m2-i1", name: "Fairlife milk", amount: "8 fl oz", cal: 80, protein: 13 }
+          ]},
+          { id: "sat-m3", time: "Afternoon", name: "Veggies + hummus (optional)", cal: 150, protein: 5, ingredients: [
+            { id: "sat-m3-i0", name: "Carrots, celery, bell peppers", amount: "130g mixed", cal: 50, protein: 2 },
+            { id: "sat-m3-i1", name: "Hummus", amount: "60g", cal: 100, protein: 3 }
+          ]},
+          { id: "sat-m4", time: "6:00 PM", name: "Chicken tortilla soup + chips", cal: 521, protein: 52, ingredients: [
+            { id: "sat-m4-i0", name: "Shredded chicken", amount: "210g", cal: 225, protein: 38 },
+            { id: "sat-m4-i1", name: "Chicken broth", amount: "18 fl oz", cal: 23, protein: 3 },
+            { id: "sat-m4-i2", name: "Black beans", amount: "65g", cal: 90, protein: 6 },
+            { id: "sat-m4-i3", name: "Diced tomatoes", amount: "135g", cal: 30, protein: 2 },
+            { id: "sat-m4-i4", name: "Corn", amount: "60g", cal: 45, protein: 2 },
+            { id: "sat-m4-i5", name: "Onion, garlic, spices", amount: "mixed", cal: 38, protein: 0 },
+            { id: "sat-m4-i6", name: "Tortilla chips", amount: "~14g (small handful)", cal: 70, protein: 1 }
+          ]},
+          { id: "sat-m5", time: "7:30 PM", name: "Ninja Creami (PB&J ice cream)", cal: 524, protein: 37, ingredients: [
+            { id: "sat-m5-i0", name: "Fage 0% Greek yogurt", amount: "125g", cal: 68, protein: 12 },
+            { id: "sat-m5-i1", name: "Frozen mangos", amount: "~40g", cal: 25, protein: 0 },
+            { id: "sat-m5-i2", name: "Stahlbush blackberries", amount: "70g", cal: 35, protein: 1 },
+            { id: "sat-m5-i3", name: "ON Whey protein (vanilla)", amount: "3/4 scoop (~23g)", cal: 90, protein: 18 },
+            { id: "sat-m5-i4", name: "Peanut butter", amount: "~12g", cal: 71, protein: 2 },
+            { id: "sat-m5-i5", name: "Chia seeds", amount: "~3/4 tsp", cal: 15, protein: 1 },
+            { id: "sat-m5-i6", name: "Fairlife milk", amount: "2 fl oz", cal: 20, protein: 3 },
+            { id: "sat-m5-i7", name: "Homemade whipped cream", amount: "4 generous dollops", cal: 200, protein: 0 }
+          ]}
+        ],
+        workouts: [
+          { id: "sat-w1", name: "Circuit 1: Jump squats, lunges, step-ups, wall sit (10 min)" },
+          { id: "sat-w2", name: "Circuit 2: Russian twist, leg kicks, crunches, push-ups (10 min)" },
+          { id: "sat-w3", name: "Circuit 3: Treadmill HIIT (10 min)" },
+          { id: "sat-w4", name: "Circuit 4: Incline walk (10 min)" }
+        ],
+        cardioSession: null
+      },
+      sunday: {
+        title: "SUNDAY",
+        subtitle: "Rest",
+        cardio: "8:30 AM walk (2-3 miles)",
+        targetCal: 2154,
+        targetProtein: 135,
+        meals: [
+          { id: "sun-m0", time: "9:30 AM", name: "Fairlife shake", cal: 170, protein: 26, ingredients: [
+            { id: "sun-m0-i0", name: "Fairlife Core Power shake", amount: "1 bottle (340ml)", cal: 170, protein: 26 }
+          ]},
+          { id: "sun-m1a", time: "9:30 AM", name: "Cafe breakfast sandwich", cal: 400, protein: 23, group: "sun-breakfast", ingredients: [
+            { id: "sun-m1a-i0", name: "English muffin", amount: "1 whole (~57g)", cal: 130, protein: 5 },
+            { id: "sun-m1a-i1", name: "Bacon", amount: "2 strips (~16g cooked)", cal: 90, protein: 6 },
+            { id: "sun-m1a-i2", name: "Egg", amount: "1 large (~50g)", cal: 70, protein: 6 },
+            { id: "sun-m1a-i3", name: "Cheese", amount: "1 slice (~21g)", cal: 100, protein: 6 },
+            { id: "sun-m1a-i4", name: "Tomato", amount: "1 slice", cal: 10, protein: 0 }
+          ]},
+          { id: "sun-m1b", time: "9:30 AM", name: "Greek yogurt + mango + honey", cal: 240, protein: 19, group: "sun-breakfast", ingredients: [
+            { id: "sun-m1b-i0", name: "Fage 0% Greek yogurt", amount: "230g", cal: 120, protein: 18 },
+            { id: "sun-m1b-i1", name: "Mango chunks", amount: "80g", cal: 60, protein: 1 },
+            { id: "sun-m1b-i2", name: "Honey", amount: "1 tbsp (21g)", cal: 60, protein: 0 }
+          ]},
+          { id: "sun-m2", time: "Lunch", name: "Drug eggs over rice", cal: 384, protein: 21, ingredients: [
+            { id: "sun-m2-i0", name: "Soft boiled eggs (marinated)", amount: "3 large (~150g)", cal: 210, protein: 18 },
+            { id: "sun-m2-i1", name: "Costco rice bowl (45% eaten)", amount: "~145g cooked", cal: 144, protein: 3 },
+            { id: "sun-m2-i2", name: "Soy/garlic/herb marinade", amount: "1 tbsp", cal: 30, protein: 0 }
+          ]},
+          { id: "sun-m3", time: "6:00 PM", name: "Pad Thai + Chicken Satay", cal: 1200, protein: 65, ingredients: [
+            { id: "sun-m3-i0", name: "Pad Thai (restaurant order)", amount: "1 full order", cal: 850, protein: 20 },
+            { id: "sun-m3-i1", name: "Chicken satay skewers", amount: "6-7 skewers (~200g)", cal: 350, protein: 45 }
+          ]}
+        ],
+        workouts: [
+          { id: "sun-w1", name: "2-3 mile morning walk" }
+        ],
+        mealPrep: [
+          { id: "sun-prep1", name: "Batch Ninja Creamis" },
+          { id: "sun-prep2", name: "Marinate drug eggs" }
+        ],
+        cardioSession: null
+      }
+    };
+    
+    const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+    const dayLabels = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
+    
+    // State management
+    let state = {
+      currentTab: 'monday',
+      weekStart: getWeekStart(),
+      items: {},
+      sleep: {},
+      notes: {},
+      weights: {}, // daily bodyweights keyed by day
+      liftWeights: {}, // lift weights keyed by exercise id (legacy)
+      setLogs: {}, // per-set logs: { "exerciseId": { "1": {weight, reps}, "2": {weight, reps}, ... } }
+      customMeals: {}, // custom meal overrides { name, cal, protein }
+      ingredientExclusions: {}, // ingredient IDs that are excluded
+      ingredientMultipliers: {} // ingredient ID -> multiplier number
+    };
+    
+    function getWeekStart() {
+      const now = new Date();
+      const day = now.getDay();
+      const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+      const monday = new Date(now.getFullYear(), now.getMonth(), diff, 12, 0, 0); // Use noon to avoid timezone issues
+      const year = monday.getFullYear();
+      const month = String(monday.getMonth() + 1).padStart(2, '0');
+      const date = String(monday.getDate()).padStart(2, '0');
+      return `${year}-${month}-${date}`;
+    }
+    
+    function loadState() {
+      const saved = localStorage.getItem('fitnessTracker_' + state.weekStart);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        state.items = parsed.items || {};
+        state.sleep = parsed.sleep || {};
+        state.notes = parsed.notes || {};
+        state.weights = parsed.weights || {};
+        state.liftWeights = parsed.liftWeights || {};
+        state.setLogs = parsed.setLogs || {};
+        state.customMeals = parsed.customMeals || {};
+        state.ingredientExclusions = parsed.ingredientExclusions || {};
+        state.ingredientMultipliers = parsed.ingredientMultipliers || {};
+      }
+    }
+    
+    function saveState() {
+      localStorage.setItem('fitnessTracker_' + state.weekStart, JSON.stringify({
+        items: state.items,
+        sleep: state.sleep,
+        notes: state.notes,
+        weights: state.weights,
+        liftWeights: state.liftWeights,
+        setLogs: state.setLogs,
+        customMeals: state.customMeals,
+        ingredientExclusions: state.ingredientExclusions,
+        ingredientMultipliers: state.ingredientMultipliers
+      }));
+    }
+    
+    function toggleItem(id, group = null) {
+      // If this item is part of a group, clear other items in the same group
+      if (group) {
+        // Find all items in this group and clear them (check both meals and workouts)
+        days.forEach(dayKey => {
+          weekData[dayKey].meals.forEach(meal => {
+            if (meal.group === group && meal.id !== id) {
+              delete state.items[meal.id];
+            }
+          });
+          weekData[dayKey].workouts.forEach(w => {
+            if (w.group === group && w.id !== id) {
+              delete state.items[w.id];
+            }
+          });
+        });
+      }
+      
+      if (!state.items[id]) {
+        state.items[id] = 'done';
+      } else if (state.items[id] === 'done') {
+        state.items[id] = 'missed';
+      } else {
+        delete state.items[id];
+      }
+      saveState();
+      render();
+    }
+    
+    function toggleSleep(day) {
+      if (!state.sleep[day]) {
+        state.sleep[day] = 'done';
+      } else if (state.sleep[day] === 'done') {
+        state.sleep[day] = 'missed';
+      } else {
+        delete state.sleep[day];
+      }
+      saveState();
+      render();
+    }
+    
+    function updateNotes(day, value) {
+      state.notes[day] = value;
+      saveState();
+    }
+    
+    function updateWeight(day, value) {
+      if (value && !isNaN(value)) {
+        state.weights[day] = parseFloat(value);
+      } else {
+        delete state.weights[day];
+      }
+      saveState();
+      render();
+    }
+    
+    function updateLiftWeight(id, value) {
+      if (value && !isNaN(value)) {
+        state.liftWeights[id] = parseFloat(value);
+      } else {
+        delete state.liftWeights[id];
+      }
+      saveState();
+    }
+    
+    // Parse sets x reps from exercise name, e.g. "3x8 Incline Bench" => { sets: 3, reps: 8 }
+    function parseSetReps(name) {
+      const match = name.match(/(\d+)\s*x\s*(\d+)[\s-]/i);
+      if (match) {
+        return { sets: parseInt(match[1]), reps: parseInt(match[2]) };
+      }
+      // Also handle "3x8-10" format
+      const rangeMatch = name.match(/(\d+)\s*x\s*(\d+)-(\d+)/i);
+      if (rangeMatch) {
+        return { sets: parseInt(rangeMatch[1]), reps: parseInt(rangeMatch[3]) }; // use upper end as target
+      }
+      return null;
+    }
+    
+    function updateSetLog(exerciseId, setNum, field, value) {
+      if (!state.setLogs[exerciseId]) {
+        state.setLogs[exerciseId] = {};
+      }
+      if (!state.setLogs[exerciseId][setNum]) {
+        state.setLogs[exerciseId][setNum] = {};
+      }
+      if (value && !isNaN(value)) {
+        state.setLogs[exerciseId][setNum][field] = parseFloat(value);
+      } else {
+        delete state.setLogs[exerciseId][setNum][field];
+        // Clean up empty set entries
+        if (Object.keys(state.setLogs[exerciseId][setNum]).length === 0) {
+          delete state.setLogs[exerciseId][setNum];
+        }
+        if (Object.keys(state.setLogs[exerciseId]).length === 0) {
+          delete state.setLogs[exerciseId];
+        }
+      }
+      saveState();
+    }
+    
+    // Get the top set for an exercise from setLogs (highest weight, with its reps)
+    function getTopSet(exerciseId, data) {
+      const logs = data && data.setLogs ? data.setLogs[exerciseId] : (state.setLogs[exerciseId] || null);
+      if (!logs) {
+        // Fallback to legacy liftWeights
+        const lw = data ? (data.liftWeights || {}) : state.liftWeights;
+        if (lw[exerciseId]) return { weight: lw[exerciseId], reps: null };
+        return null;
+      }
+      let topWeight = 0, topReps = null;
+      Object.values(logs).forEach(set => {
+        if (set.weight && set.weight > topWeight) {
+          topWeight = set.weight;
+          topReps = set.reps || null;
+        }
+      });
+      return topWeight > 0 ? { weight: topWeight, reps: topReps } : null;
+    }
+    
+    function toggleCustomMeal(id) {
+      const editingId = 'editing-' + id;
+      const el = document.getElementById(editingId);
+      if (el) {
+        el.classList.toggle('show');
+      }
+    }
+    
+    function saveCustomMeal(id, defaultName) {
+      const nameEl = document.getElementById('custom-name-' + id);
+      const calEl = document.getElementById('custom-cal-' + id);
+      const proteinEl = document.getElementById('custom-protein-' + id);
+      
+      const name = nameEl.value.trim();
+      const cal = parseInt(calEl.value) || 0;
+      const protein = parseInt(proteinEl.value) || 0;
+      
+      if (name && cal > 0) {
+        state.customMeals[id] = { name, cal, protein };
+        state.items[id] = 'done'; // auto-check it
+      }
+      saveState();
+      render();
+    }
+    
+    function clearCustomMeal(id) {
+      delete state.customMeals[id];
+      delete state.items[id];
+      saveState();
+      render();
+    }
+    
+
+    function toggleIngredient(ingId) {
+      if (state.ingredientExclusions[ingId]) {
+        delete state.ingredientExclusions[ingId];
+      } else {
+        state.ingredientExclusions[ingId] = true;
+      }
+      saveState();
+      render();
+    }
+    
+    function toggleIngredientList(mealId) {
+      const el = document.getElementById('ingredients-' + mealId);
+      if (el) {
+        el.classList.toggle('expanded');
+        const btn = document.getElementById('ing-btn-' + mealId);
+        if (btn) {
+          btn.textContent = el.classList.contains('expanded') ? 
+            btn.textContent.replace('▸', '▾') : 
+            btn.textContent.replace('▾', '▸');
+        }
+      }
+    }
+    
+    function getMealActiveTotals(meal) {
+      if (!meal.ingredients || meal.ingredients.length === 0) {
+        return { cal: meal.cal, protein: meal.protein };
+      }
+      let cal = 0, protein = 0;
+      meal.ingredients.forEach(ing => {
+        if (!state.ingredientExclusions[ing.id]) {
+          const mult = state.ingredientMultipliers[ing.id] || 1;
+          cal += Math.round(ing.cal * mult);
+          protein += Math.round(ing.protein * mult);
+        }
+      });
+      return { cal, protein };
+    }
+    
+    function updateIngredientMultiplier(ingId, value) {
+      const mult = parseFloat(value);
+      if (!isNaN(mult) && mult > 0) {
+        if (mult === 1) {
+          delete state.ingredientMultipliers[ingId];
+        } else {
+          state.ingredientMultipliers[ingId] = mult;
+        }
+      } else if (value === '') {
+        delete state.ingredientMultipliers[ingId];
+      }
+      saveState();
+      render();
+    }
+    
+    function changeWeek(offset) {
+      const current = new Date(state.weekStart + 'T12:00:00');
+      current.setDate(current.getDate() + (offset * 7));
+      const year = current.getFullYear();
+      const month = String(current.getMonth() + 1).padStart(2, '0');
+      const d = String(current.getDate()).padStart(2, '0');
+      state.weekStart = `${year}-${month}-${d}`;
+      state.items = {};
+      state.sleep = {};
+      state.notes = {};
+      state.weights = {};
+      state.liftWeights = {};
+      state.setLogs = {};
+      state.customMeals = {};
+      state.ingredientExclusions = {};
+      state.ingredientMultipliers = {};
+      loadState();
+      render();
+    }
+    
+    function setWeek(dateStr) {
+      const date = new Date(dateStr + 'T12:00:00'); // Add noon time to avoid timezone edge cases
+      const day = date.getDay();
+      const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+      const monday = new Date(date.getFullYear(), date.getMonth(), diff, 12, 0, 0); // Use noon
+      const year = monday.getFullYear();
+      const month = String(monday.getMonth() + 1).padStart(2, '0');
+      const d = String(monday.getDate()).padStart(2, '0');
+      state.weekStart = `${year}-${month}-${d}`;
+      state.items = {};
+      state.sleep = {};
+      state.notes = {};
+      state.weights = {};
+      state.liftWeights = {};
+      state.setLogs = {};
+      state.customMeals = {};
+      state.ingredientExclusions = {};
+      state.ingredientMultipliers = {};
+      loadState();
+      render();
+    }
+    
+    function resetWeek() {
+      if (confirm('Reset all data for this week?')) {
+        state.items = {};
+        state.sleep = {};
+        state.notes = {};
+        state.weights = {};
+        state.liftWeights = {};
+        state.setLogs = {};
+        state.customMeals = {};
+        state.ingredientExclusions = {};
+        state.ingredientMultipliers = {};
+        saveState();
+        render();
+      }
+    }
+    
+    function getAllWeekData() {
+      const allData = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('fitnessTracker_')) {
+          const weekStart = key.replace('fitnessTracker_', '');
+          const data = JSON.parse(localStorage.getItem(key));
+          allData.push({ weekStart, ...data });
+        }
+      }
+      return allData.sort((a, b) => new Date(b.weekStart) - new Date(a.weekStart));
+    }
+    
+    function getWeekSummaryData(weekStart, data) {
+      let totalMealsHit = 0, totalMeals = 0;
+      let totalWorkoutsHit = 0, totalWorkouts = 0;
+      let totalCardioHit = 0, totalCardio = 0;
+      let totalSleepHit = 0;
+      
+      days.forEach(dayKey => {
+        const day = weekData[dayKey];
+        const mealGroupsCounted = new Set();
+        const mealGroupsHit = new Set();
+        const workoutGroupsCounted = new Set();
+        const workoutGroupsHit = new Set();
+        
+        // Count meals
+        day.meals.forEach(meal => {
+          if (meal.group) {
+            if (!mealGroupsCounted.has(meal.group)) {
+              mealGroupsCounted.add(meal.group);
+              totalMeals++;
+            }
+          } else {
+            totalMeals++;
+          }
+          
+          if (data.items && data.items[meal.id] === 'done') {
+            if (meal.group) {
+              if (!mealGroupsHit.has(meal.group)) {
+                mealGroupsHit.add(meal.group);
+                totalMealsHit++;
+              }
+            } else {
+              totalMealsHit++;
+            }
+          }
+        });
+        
+        // Count workouts
+        day.workouts.forEach(w => {
+          if (w.group) {
+            if (!workoutGroupsCounted.has(w.group)) {
+              workoutGroupsCounted.add(w.group);
+              totalWorkouts++;
+            }
+          } else {
+            totalWorkouts++;
+          }
+          
+          if (data.items && data.items[w.id] === 'done') {
+            if (w.group) {
+              if (!workoutGroupsHit.has(w.group)) {
+                workoutGroupsHit.add(w.group);
+                totalWorkoutsHit++;
+              }
+            } else {
+              totalWorkoutsHit++;
+            }
+          }
+        });
+        
+        if (day.cardioSession) {
+          totalCardio++;
+          if (Array.isArray(day.cardioSession)) {
+            if (day.cardioSession.some(c => data.items && data.items[c.id] === 'done')) totalCardioHit++;
+          } else {
+            if (data.items && data.items[day.cardioSession.id] === 'done') totalCardioHit++;
+          }
+        }
+        if (data.sleep && data.sleep[dayKey] === 'done') totalSleepHit++;
+      });
+      
+      const weights = data.weights || {};
+      const weightValues = Object.values(weights).filter(w => w);
+      const avgWeight = weightValues.length > 0 ? (weightValues.reduce((a,b) => a+b, 0) / weightValues.length).toFixed(1) : null;
+      const startWeight = weights.monday || weights.tuesday || weights.wednesday;
+      const endWeight = weights.sunday || weights.saturday || weights.friday;
+      const weightChange = (startWeight && endWeight) ? (endWeight - startWeight).toFixed(1) : null;
+      
+      return { totalMealsHit, totalMeals, totalWorkoutsHit, totalWorkouts, totalCardioHit, totalCardio, totalSleepHit, avgWeight, weightChange };
+    }
+    
+    function getDayStats(dayKey) {
+      const day = weekData[dayKey];
+      let mealsHit = 0, mealsMissed = 0;
+      let calConsumed = 0, proteinConsumed = 0;
+      let workoutsHit = 0, workoutsMissed = 0;
+      
+      // Track which groups we've already counted for meals
+      const mealGroupsCounted = new Set();
+      let mealsTotal = 0;
+      
+      day.meals.forEach(meal => {
+        if (meal.group) {
+          if (!mealGroupsCounted.has(meal.group)) {
+            mealGroupsCounted.add(meal.group);
+            mealsTotal++;
+          }
+        } else {
+          mealsTotal++;
+        }
+        
+        if (state.items[meal.id] === 'done') {
+          // Use custom meal values if they exist, otherwise use ingredient-based totals
+          const custom = state.customMeals[meal.id];
+          if (custom) {
+            calConsumed += custom.cal;
+            proteinConsumed += custom.protein;
+          } else {
+            const totals = getMealActiveTotals(meal);
+            calConsumed += totals.cal;
+            proteinConsumed += totals.protein;
+          }
+        }
+      });
+      
+      // Recalculate mealsHit properly for groups
+      const mealGroupsHit = new Set();
+      day.meals.forEach(meal => {
+        if (state.items[meal.id] === 'done') {
+          if (meal.group) {
+            if (!mealGroupsHit.has(meal.group)) {
+              mealGroupsHit.add(meal.group);
+              mealsHit++;
+            }
+          } else {
+            mealsHit++;
+          }
+        }
+      });
+      
+      // Track which groups we've already counted for workouts
+      const workoutGroupsCounted = new Set();
+      let workoutsTotal = 0;
+      
+      day.workouts.forEach(w => {
+        if (w.group) {
+          if (!workoutGroupsCounted.has(w.group)) {
+            workoutGroupsCounted.add(w.group);
+            workoutsTotal++;
+          }
+        } else {
+          workoutsTotal++;
+        }
+      });
+      
+      // Recalculate workoutsHit properly for groups
+      const workoutGroupsHit = new Set();
+      day.workouts.forEach(w => {
+        if (state.items[w.id] === 'done') {
+          if (w.group) {
+            if (!workoutGroupsHit.has(w.group)) {
+              workoutGroupsHit.add(w.group);
+              workoutsHit++;
+            }
+          } else {
+            workoutsHit++;
+          }
+        }
+      });
+      
+      // Check if cardio was done (handles both single and array cardio)
+      let cardioHit = false;
+      if (day.cardioSession) {
+        if (Array.isArray(day.cardioSession)) {
+          cardioHit = day.cardioSession.some(c => state.items[c.id] === 'done');
+        } else {
+          cardioHit = state.items[day.cardioSession.id] === 'done';
+        }
+      }
+      
+      return { mealsHit, mealsMissed, mealsTotal, workoutsHit, workoutsMissed, workoutsTotal, calConsumed, proteinConsumed, cardioHit };
+    }
+    
+    function getWeeklyStats() {
+      let totalMealsHit = 0, totalMeals = 0;
+      let totalWorkoutsHit = 0, totalWorkouts = 0;
+      let totalCardioHit = 0, totalCardio = 0;
+      let totalSleepHit = 0;
+      
+      days.forEach(dayKey => {
+        const stats = getDayStats(dayKey);
+        totalMealsHit += stats.mealsHit;
+        totalMeals += stats.mealsTotal;
+        totalWorkoutsHit += stats.workoutsHit;
+        totalWorkouts += stats.workoutsTotal;
+        if (weekData[dayKey].cardioSession) {
+          totalCardio++;
+          if (stats.cardioHit) totalCardioHit++;
+        }
+        if (state.sleep[dayKey] === 'done') totalSleepHit++;
+      });
+      
+      return { totalMealsHit, totalMeals, totalWorkoutsHit, totalWorkouts, totalCardioHit, totalCardio, totalSleepHit };
+    }
+    
+    function renderToggle(id, group = null, size = 36) {
+      const status = state.items[id];
+      let className = 'item-toggle';
+      let content = '';
+      if (status === 'done') {
+        className += ' done';
+        content = '✓';
+      } else if (status === 'missed') {
+        className += ' missed';
+        content = '✗';
+      }
+      const groupParam = group ? `'${group}'` : 'null';
+      return `<div class="${className}" style="width:${size}px;height:${size}px" onclick="toggleItem('${id}', ${groupParam})">${content}</div>`;
+    }
+    
+    function renderDayContent(dayKey) {
+      const day = weekData[dayKey];
+      const stats = getDayStats(dayKey);
+      
+      const calClass = stats.calConsumed > 0 ? (stats.calConsumed <= day.targetCal ? 'good' : 'warning') : '';
+      const proteinClass = stats.proteinConsumed > 0 ? (stats.proteinConsumed >= day.targetProtein ? 'good' : 'warning') : '';
+      
+      // Get yesterday's weight for comparison
+      const dayIndex = days.indexOf(dayKey);
+      const yesterdayKey = dayIndex > 0 ? days[dayIndex - 1] : null;
+      const todayWeight = state.weights[dayKey];
+      const yesterdayWeight = yesterdayKey ? state.weights[yesterdayKey] : null;
+      let weightChange = '';
+      if (todayWeight && yesterdayWeight) {
+        const diff = (todayWeight - yesterdayWeight).toFixed(1);
+        if (diff > 0) weightChange = `<span style="color:#f87171">+${diff}</span>`;
+        else if (diff < 0) weightChange = `<span style="color:#4ade80">${diff}</span>`;
+        else weightChange = `<span style="color:#888">±0</span>`;
+      }
+      
+      let html = `
+        <div class="day-header">
+          <h2>${day.title}</h2>
+          <div class="subtitle">${day.subtitle} • ${day.cardio}</div>
+        </div>
+        
+        <div class="section">
+          <div class="section-header">
+            <span>⚖️ Morning Weigh-in</span>
+            ${weightChange ? `<span style="font-size:0.9rem">${weightChange} lbs</span>` : ''}
+          </div>
+          <div class="weigh-in-input">
+            <input type="number" step="0.1" placeholder="Enter weight (lbs)" 
+              value="${state.weights[dayKey] || ''}" 
+              onchange="updateWeight('${dayKey}', this.value)">
+          </div>
+        </div>
+        
+        <div class="day-stats">
+          <div class="stat-box ${calClass}">
+            <div class="value">${stats.calConsumed}</div>
+            <div class="label">/ ${day.targetCal} cal</div>
+          </div>
+          <div class="stat-box ${proteinClass}">
+            <div class="value">${stats.proteinConsumed}g</div>
+            <div class="label">/ ${day.targetProtein}g protein</div>
+          </div>
+        </div>
+        
+        <div class="section">
+          <div class="section-header">
+            <span>🍽️ Meals</span>
+            <span class="count">${stats.mealsHit}/${stats.mealsTotal}</span>
+          </div>
+          ${day.meals.map((meal, idx) => {
+            const isGroupStart = meal.group && (idx === 0 || day.meals[idx-1].group !== meal.group);
+            const isInGroup = meal.group;
+            const groupLabel = isGroupStart ? `<div class="or-label">Pick one:</div>` : '';
+            const orDivider = isInGroup && idx > 0 && day.meals[idx-1].group === meal.group ? `<div class="or-divider">— OR —</div>` : '';
+            const custom = state.customMeals[meal.id];
+            const displayName = custom ? custom.name : meal.name;
+            const activeTotals = getMealActiveTotals(meal);
+            const displayCal = custom ? custom.cal : activeTotals.cal;
+            const displayProtein = custom ? custom.protein : activeTotals.protein;
+            const isCustom = !!custom;
+            const hasIngredients = meal.ingredients && meal.ingredients.length > 0;
+            const excludedCount = hasIngredients ? meal.ingredients.filter(ing => state.ingredientExclusions[ing.id]).length : 0;
+            const ingLabel = hasIngredients ? (excludedCount > 0 ? `${meal.ingredients.length - excludedCount}/${meal.ingredients.length} ingredients` : `${meal.ingredients.length} ingredients`) : '';
+            return `
+              ${groupLabel}
+              ${orDivider}
+              <div class="meal-wrapper">
+                <div class="item ${isInGroup ? 'grouped-item' : ''} ${isCustom ? 'custom-meal' : ''}">
+                  ${renderToggle(meal.id, meal.group || null)}
+                  <div class="item-details">
+                    <div class="item-time">${meal.time}</div>
+                    <div class="item-name">${displayName} ${isCustom ? '<span class="custom-badge">CUSTOM</span>' : ''}</div>
+                    <div class="item-meta">${displayCal} cal • ${displayProtein}g protein</div>
+                  </div>
+                  <div class="edit-meal-btn" onclick="toggleCustomMeal('${meal.id}')">✏️</div>
+                </div>
+                ${hasIngredients ? `
+                  <div class="ingredient-toggle-btn" id="ing-btn-${meal.id}" onclick="toggleIngredientList('${meal.id}')">▸ ${ingLabel}</div>
+                  <div class="ingredient-list" id="ingredients-${meal.id}">
+                    ${meal.ingredients.map(ing => {
+                      const excluded = state.ingredientExclusions[ing.id];
+                      const mult = state.ingredientMultipliers[ing.id] || 1;
+                      const dispCal = Math.round(ing.cal * mult);
+                      const dispProtein = Math.round(ing.protein * mult);
+                      const isModified = mult !== 1;
+                      return `<div class="ingredient-row ${excluded ? 'excluded' : ''}">
+                        <div class="ing-toggle ${excluded ? 'excluded' : 'included'}" onclick="toggleIngredient('${ing.id}')">${excluded ? '✗' : '✓'}</div>
+                        <div class="ing-name">${ing.name}</div>
+                        <div class="ing-amount">${ing.amount}</div>
+                        <div class="ing-multiplier">
+                          <span class="ing-multiplier-label">×</span>
+                          <input type="number" step="0.25" min="0.25" value="${mult}" 
+                            class="${isModified ? 'modified' : ''}"
+                            onchange="updateIngredientMultiplier('${ing.id}', this.value)"
+                            onclick="event.stopPropagation()">
+                        </div>
+                        <div class="ing-meta">${dispCal} cal • ${dispProtein}g</div>
+                      </div>`;
+                    }).join('')}
+                  </div>
+                ` : ''}
+                <div id="editing-${meal.id}" class="custom-meal-editor">
+                  <div class="custom-meal-default">Default: ${meal.name} (${meal.cal} cal, ${meal.protein}g)</div>
+                  <input type="text" id="custom-name-${meal.id}" placeholder="Meal name" value="${custom ? custom.name : ''}">
+                  <div class="custom-meal-inputs">
+                    <input type="number" id="custom-cal-${meal.id}" placeholder="Calories" value="${custom ? custom.cal : ''}">
+                    <input type="number" id="custom-protein-${meal.id}" placeholder="Protein (g)" value="${custom ? custom.protein : ''}">
+                  </div>
+                  <div class="custom-meal-actions">
+                    <button onclick="saveCustomMeal('${meal.id}', '${meal.name}')">Save</button>
+                    <button class="secondary" onclick="clearCustomMeal('${meal.id}')">Use Default</button>
+                  </div>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+        
+        <div class="section">
+          <div class="section-header">
+            <span>💪 Workout</span>
+            <span class="count">${stats.workoutsHit}/${stats.workoutsTotal}</span>
+          </div>
+          ${day.workouts.map((w, idx) => {
+            const isGroupStart = w.group && (idx === 0 || day.workouts[idx-1].group !== w.group);
+            const isInGroup = w.group;
+            const groupLabel = isGroupStart ? `<div class="or-label">Pick one:</div>` : '';
+            const orDivider = isInGroup && idx > 0 && day.workouts[idx-1].group === w.group ? `<div class="or-divider">— OR —</div>` : '';
+            
+            // Parse sets x reps for trackable exercises
+            const setReps = w.track ? parseSetReps(w.name) : null;
+            const logs = state.setLogs[w.id] || {};
+            const topSet = getTopSet(w.id);
+            const topSetDisplay = topSet ? (topSet.reps ? `Top: ${topSet.weight} lbs × ${topSet.reps}` : `Top: ${topSet.weight} lbs`) : '';
+            
+            // Build set logging area
+            let setLogHtml = '';
+            if (w.track && setReps) {
+              const rows = [];
+              for (let s = 1; s <= setReps.sets; s++) {
+                const setData = logs[s] || {};
+                rows.push(`
+                  <div class="set-log-row">
+                    <div class="set-label">S${s}</div>
+                    <input type="number" step="2.5" placeholder="lbs" 
+                      value="${setData.weight || ''}" 
+                      class="${setData.weight ? 'has-value' : ''}"
+                      onchange="updateSetLog('${w.id}', ${s}, 'weight', this.value)"
+                      onclick="event.stopPropagation()">
+                    <input type="number" step="1" placeholder="${setReps.reps}" 
+                      value="${setData.reps || ''}" 
+                      class="${setData.reps ? 'has-value' : ''}"
+                      onchange="updateSetLog('${w.id}', ${s}, 'reps', this.value)"
+                      onclick="event.stopPropagation()">
+                  </div>
+                `);
+              }
+              setLogHtml = `
+                <div class="set-log-area">
+                  <div class="set-log-header">
+                    <div>Set</div>
+                    <div>Weight</div>
+                    <div>Reps</div>
+                  </div>
+                  ${rows.join('')}
+                  ${topSetDisplay ? `<div class="set-log-summary"><span class="top-set">${topSetDisplay}</span></div>` : ''}
+                </div>
+              `;
+            } else if (w.track) {
+              // Fallback for exercises without parseable sets (just single weight input)
+              setLogHtml = `
+                <div class="set-log-area">
+                  <div class="set-log-row">
+                    <div class="set-label">Wt</div>
+                    <input type="number" step="2.5" placeholder="lbs" style="grid-column: span 2;"
+                      value="${state.liftWeights[w.id] || ''}" 
+                      onchange="updateLiftWeight('${w.id}', this.value)"
+                      onclick="event.stopPropagation()">
+                  </div>
+                </div>
+              `;
+            }
+            
+            return `
+              ${groupLabel}
+              ${orDivider}
+              <div class="item ${isInGroup ? 'grouped-item' : ''}">
+                ${renderToggle(w.id, w.group || null)}
+                <div class="item-details">
+                  <div class="item-name">${w.name}</div>
+                  ${topSetDisplay && !setReps ? `<div class="item-meta">${topSetDisplay}</div>` : ''}
+                </div>
+              </div>
+              ${setLogHtml}
+            `;
+          }).join('')}
+        </div>
+      `;
+      
+      if (day.cardioSession) {
+        // Handle both single cardio and array of pick-one options
+        const isArray = Array.isArray(day.cardioSession);
+        html += `
+          <div class="section">
+            <div class="section-header">
+              <span>🏃 Cardio</span>
+            </div>
+            ${isArray ? `
+              <div class="or-label">Pick one:</div>
+              ${day.cardioSession.map((c, idx) => `
+                ${idx > 0 ? '<div class="or-divider">— OR —</div>' : ''}
+                <div class="item grouped-item">
+                  ${renderToggle(c.id, c.group)}
+                  <div class="item-details">
+                    <div class="item-name">${c.name}</div>
+                  </div>
+                </div>
+              `).join('')}
+            ` : `
+              <div class="item">
+                ${renderToggle(day.cardioSession.id)}
+                <div class="item-details">
+                  <div class="item-name">${day.cardioSession.name}</div>
+                </div>
+              </div>
+            `}
+          </div>
+        `;
+      }
+      
+      // Meal prep section (only for days that have it)
+      if (day.mealPrep && day.mealPrep.length > 0) {
+        html += `
+          <div class="section">
+            <div class="section-header">
+              <span>🥗 Meal Prep</span>
+            </div>
+            ${day.mealPrep.map(prep => `
+              <div class="item">
+                ${renderToggle(prep.id)}
+                <div class="item-details">
+                  <div class="item-name">${prep.name}</div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      }
+      
+      html += `
+        <div class="section">
+          <div class="section-header">
+            <span>😴 Sleep (7+ hours last night?)</span>
+          </div>
+          <div class="sleep-tracker">
+            <span>Did you get 7+ hours of sleep?</span>
+            <div class="sleep-toggle ${state.sleep[dayKey] || ''}" onclick="toggleSleep('${dayKey}')">
+              ${state.sleep[dayKey] === 'done' ? '✓' : state.sleep[dayKey] === 'missed' ? '✗' : ''}
+            </div>
+          </div>
+        </div>
+        
+        <div class="section notes-section">
+          <div class="section-header">
+            <span>📝 Notes</span>
+          </div>
+          <textarea placeholder="Add notes for ${day.title}..." onchange="updateNotes('${dayKey}', this.value)">${state.notes[dayKey] || ''}</textarea>
+        </div>
+      `;
+      
+      return html;
+    }
+    
+    function getStrengthProgress() {
+      const allWeeks = getAllWeekData().reverse(); // oldest first
+      const exercises = {};
+      
+      // Define which exercises to track (key lifts) - updated list
+      const keyLifts = [
+        { id: 'mon-w2', name: 'Incline Press', day: 'Mon' },
+        { id: 'tue-w2', name: 'Hack Squat', day: 'Tue' },
+        { id: 'tue-w3', name: 'Leg Curl', day: 'Tue' },
+        { id: 'fri-w2', name: 'RDL', day: 'Fri' },
+        { id: 'mon-w3', name: 'Lat Pulldown', day: 'Mon' },
+        { id: 'thu-w6', name: 'Assisted Dips', day: 'Thu' },
+        { id: 'tue-w7', name: 'Decline Crunch', day: 'Tue', bodyweight: true },
+        { id: 'mon-w7', name: 'Preacher Curls', day: 'Mon' }
+      ];
+      
+      keyLifts.forEach(lift => {
+        exercises[lift.id] = {
+          name: lift.name,
+          day: lift.day,
+          bodyweight: lift.bodyweight || false,
+          data: []
+        };
+        
+        allWeeks.forEach(week => {
+          // Try setLogs first, then fallback to liftWeights
+          const topSet = getTopSet(lift.id, week);
+          if (topSet) {
+            exercises[lift.id].data.push({
+              week: week.weekStart,
+              weight: topSet.weight,
+              reps: topSet.reps
+            });
+          }
+        });
+      });
+      
+      return exercises;
+    }
+    
+    function renderStrengthProgress() {
+      const progress = getStrengthProgress();
+      const currentWeekStart = state.weekStart;
+      
+      // Epley formula: e1RM = weight × (1 + reps/30)
+      function calcE1RM(weight, reps) {
+        if (!weight || !reps) return null;
+        if (reps === 1) return weight;
+        return Math.round(weight * (1 + reps / 30));
+      }
+      
+      function getWeekOffset(offset) {
+        const d = new Date(currentWeekStart + 'T12:00:00');
+        d.setDate(d.getDate() - (offset * 7));
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        return `${y}-${m}-${dd}`;
+      }
+      
+      const thisWeekKey = currentWeekStart;
+      const lastWeekKey = getWeekOffset(1);
+      const twoWeeksKey = getWeekOffset(2);
+      
+      function weekLabel(weekStart) {
+        const d = new Date(weekStart + 'T12:00:00');
+        return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      }
+      
+      const keyLifts = Object.entries(progress);
+      const hasAnyData = keyLifts.some(([id, ex]) => ex.data.length > 0);
+      
+      if (!hasAnyData) {
+        return `<div style="padding:20px;text-align:center;color:#888;">
+          Start logging your sets to see strength progress here!
+        </div>`;
+      }
+      
+      function getWeekData(exerciseData, weekKey) {
+        return exerciseData.find(d => d.week === weekKey) || null;
+      }
+      
+      // Format: "185 × 8" on first line, "e1RM: 234" on second line
+      function formatCell(data, bodyweight) {
+        if (!data) return `<span class="strength-val empty">—</span>`;
+        if (bodyweight) {
+          return `<span class="strength-val">${data.reps || '—'} <span class="reps">reps</span></span>`;
+        }
+        const repsStr = data.reps ? ` <span class="reps">× ${data.reps}</span>` : '';
+        const e1rm = calcE1RM(data.weight, data.reps);
+        const e1rmLine = e1rm ? `<div class="e1rm-label">e1RM: ${e1rm}</div>` : '';
+        return `<span class="strength-val">${data.weight}${repsStr}</span>${e1rmLine}`;
+      }
+      
+      // Delta is now based on e1RM for weighted lifts
+      function formatDelta(current, previous, bodyweight) {
+        if (!current || !previous) return '';
+        if (bodyweight) {
+          if (!current.reps || !previous.reps) return '';
+          const diff = current.reps - previous.reps;
+          if (diff === 0) return `<span class="strength-delta same">—</span>`;
+          const cls = diff > 0 ? 'up' : 'down';
+          return `<span class="strength-delta ${cls}">${diff > 0 ? '+' : ''}${diff} reps</span>`;
+        }
+        const curE1RM = calcE1RM(current.weight, current.reps);
+        const prevE1RM = calcE1RM(previous.weight, previous.reps);
+        // If we have e1RM for both, use that; otherwise fall back to raw weight
+        if (curE1RM && prevE1RM) {
+          const diff = curE1RM - prevE1RM;
+          if (diff === 0) return `<span class="strength-delta same">—</span>`;
+          const cls = diff > 0 ? 'up' : 'down';
+          return `<span class="strength-delta ${cls}">${diff > 0 ? '+' : ''}${diff} lbs</span>`;
+        }
+        const diff = current.weight - previous.weight;
+        if (diff === 0) return `<span class="strength-delta same">—</span>`;
+        const cls = diff > 0 ? 'up' : 'down';
+        return `<span class="strength-delta ${cls}">${diff > 0 ? '+' : ''}${diff} lbs</span>`;
+      }
+      
+      let rows = keyLifts.map(([id, exercise]) => {
+        const thisWeek = getWeekData(exercise.data, thisWeekKey);
+        const lastWeek = getWeekData(exercise.data, lastWeekKey);
+        const twoWeeksAgo = getWeekData(exercise.data, twoWeeksKey);
+        
+        const deltaVsLast = formatDelta(thisWeek, lastWeek, exercise.bodyweight);
+        const deltaVs2Weeks = formatDelta(thisWeek, twoWeeksAgo, exercise.bodyweight);
+        
+        return `
+          <tr>
+            <td>
+              <div class="strength-lift-name">${exercise.name}</div>
+              <div class="strength-lift-day">${exercise.day}</div>
+            </td>
+            <td>${formatCell(twoWeeksAgo, exercise.bodyweight)}</td>
+            <td>${formatCell(lastWeek, exercise.bodyweight)}</td>
+            <td>${formatCell(thisWeek, exercise.bodyweight)}</td>
+            <td>${deltaVsLast || deltaVs2Weeks ? `
+              <div>${deltaVsLast || ''}</div>
+              ${deltaVs2Weeks && deltaVsLast ? `<div style="margin-top:3px;">${deltaVs2Weeks}</div>` : ''}
+            ` : `<span class="strength-delta same">—</span>`}</td>
+          </tr>
+        `;
+      }).join('');
+      
+      return `
+        <div class="e1rm-explainer">Change is based on estimated 1RM (Epley formula) so rep gains count too</div>
+        <table class="strength-table">
+          <thead>
+            <tr>
+              <th>Lift</th>
+              <th>${weekLabel(twoWeeksKey)}</th>
+              <th>${weekLabel(lastWeekKey)}</th>
+              <th>This Week</th>
+              <th>Δ vs Last</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows}
+          </tbody>
+        </table>
+      `;
+    }
+    
+    function getWeightLossData() {
+      const allWeeks = getAllWeekData().reverse(); // oldest first
+      const weightData = [];
+      
+      allWeeks.slice(-8).forEach(week => {
+        const weights = week.weights || {};
+        // Get all daily weights for this week
+        days.forEach((dayKey, idx) => {
+          if (weights[dayKey]) {
+            const weekDate = new Date(week.weekStart + 'T12:00:00');
+            weekDate.setDate(weekDate.getDate() + idx);
+            weightData.push({
+              date: weekDate,
+              weight: weights[dayKey],
+              label: weekDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+            });
+          }
+        });
+      });
+      
+      return weightData;
+    }
+    
+    function renderWeightLossChart() {
+      const data = getWeightLossData();
+      
+      if (data.length < 2) {
+        return `<div style="padding:20px;text-align:center;color:#888;">
+          Need at least 2 weigh-ins to show progress chart
+        </div>`;
+      }
+      
+      const weights = data.map(d => d.weight);
+      const minWeight = Math.min(...weights) - 2;
+      const maxWeight = Math.max(...weights) + 2;
+      const range = maxWeight - minWeight;
+      
+      const width = 320;
+      const height = 180;
+      const padding = { top: 20, right: 20, bottom: 40, left: 45 };
+      const chartWidth = width - padding.left - padding.right;
+      const chartHeight = height - padding.top - padding.bottom;
+      
+      // Create points for the line
+      const points = data.map((d, i) => {
+        const x = padding.left + (i / (data.length - 1)) * chartWidth;
+        const y = padding.top + chartHeight - ((d.weight - minWeight) / range) * chartHeight;
+        return { x, y, ...d };
+      });
+      
+      // Create SVG path
+      const linePath = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+      
+      // Create area fill path
+      const areaPath = linePath + ` L ${points[points.length-1].x} ${padding.top + chartHeight} L ${points[0].x} ${padding.top + chartHeight} Z`;
+      
+      // Y-axis labels (5 ticks)
+      const yTicks = [];
+      for (let i = 0; i <= 4; i++) {
+        const val = minWeight + (range * i / 4);
+        const y = padding.top + chartHeight - (i / 4) * chartHeight;
+        yTicks.push(`<text x="${padding.left - 8}" y="${y + 4}" text-anchor="end" fill="#888" font-size="10">${Math.round(val)}</text>`);
+        yTicks.push(`<line x1="${padding.left}" y1="${y}" x2="${width - padding.right}" y2="${y}" stroke="#333" stroke-dasharray="3,3"/>`);
+      }
+      
+      // X-axis labels (show ~5 dates)
+      const xLabels = [];
+      const step = Math.max(1, Math.floor(data.length / 5));
+      for (let i = 0; i < data.length; i += step) {
+        const p = points[i];
+        xLabels.push(`<text x="${p.x}" y="${height - 10}" text-anchor="middle" fill="#888" font-size="9">${p.label}</text>`);
+      }
+      // Always show last date
+      if ((data.length - 1) % step !== 0) {
+        const p = points[points.length - 1];
+        xLabels.push(`<text x="${p.x}" y="${height - 10}" text-anchor="middle" fill="#888" font-size="9">${p.label}</text>`);
+      }
+      
+      // Calculate total change
+      const firstWeight = data[0].weight;
+      const lastWeight = data[data.length - 1].weight;
+      const totalChange = (lastWeight - firstWeight).toFixed(1);
+      const changeColor = totalChange < 0 ? '#4ade80' : totalChange > 0 ? '#f87171' : '#888';
+      const changeText = totalChange > 0 ? `+${totalChange}` : totalChange;
+      
+      return `
+        <div class="weight-loss-header">
+          <span>Start: ${firstWeight} lbs</span>
+          <span>Current: ${lastWeight} lbs</span>
+          <span style="color:${changeColor};font-weight:600">${changeText} lbs</span>
+        </div>
+        <svg width="100%" viewBox="0 0 ${width} ${height}" class="weight-loss-svg">
+          <!-- Grid lines -->
+          ${yTicks.join('')}
+          
+          <!-- Area fill -->
+          <path d="${areaPath}" fill="url(#weightGradient)" opacity="0.3"/>
+          
+          <!-- Line -->
+          <path d="${linePath}" fill="none" stroke="#667eea" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          
+          <!-- Data points -->
+          ${points.map(p => `<circle cx="${p.x}" cy="${p.y}" r="4" fill="#667eea" stroke="#1a1a2e" stroke-width="2"/>`).join('')}
+          
+          <!-- X labels -->
+          ${xLabels.join('')}
+          
+          <!-- Gradient definition -->
+          <defs>
+            <linearGradient id="weightGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#667eea"/>
+              <stop offset="100%" stop-color="#1a1a2e"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      `;
+    }
+    
+    function renderSummary() {
+      const stats = getWeeklyStats();
+      
+      // Weight chart for current week
+      const weightValues = days.map(d => state.weights[d]).filter(w => w);
+      const minWeight = weightValues.length > 0 ? Math.min(...weightValues) - 2 : 220;
+      const maxWeight = weightValues.length > 0 ? Math.max(...weightValues) + 2 : 240;
+      const range = maxWeight - minWeight || 1;
+      
+      const startWeight = state.weights.monday || state.weights.tuesday;
+      const endWeight = state.weights.sunday || state.weights.saturday || state.weights.friday;
+      const weeklyChange = (startWeight && endWeight) ? (endWeight - startWeight).toFixed(1) : null;
+      const weeklyChangeDisplay = weeklyChange ? (weeklyChange > 0 ? `<span style="color:#f87171">+${weeklyChange} lbs</span>` : `<span style="color:#4ade80">${weeklyChange} lbs</span>`) : '-';
+      
+      let weightChart = days.map((dayKey, i) => {
+        const weight = state.weights[dayKey];
+        const pct = weight ? ((weight - minWeight) / range) * 100 : 0;
+        return `
+          <div class="weight-chart-row">
+            <div class="weight-chart-day">${dayLabels[i]}</div>
+            <div class="weight-chart-bar-container">
+              ${weight ? `<div class="weight-chart-bar" style="width:${pct}%"></div>` : ''}
+            </div>
+            <div class="weight-chart-value">${weight ? weight + ' lbs' : '-'}</div>
+          </div>
+        `;
+      }).join('');
+      
+      let weekBreakdown = days.map(dayKey => {
+        const day = weekData[dayKey];
+        const dayStats = getDayStats(dayKey);
+        const weight = state.weights[dayKey];
+        return `
+          <div class="week-day-row">
+            <div class="day-name">${day.title}</div>
+            <div class="day-stats-mini">
+              <span>⚖️ ${weight || '-'}</span>
+              <span>🍽️ ${dayStats.mealsHit}/${dayStats.mealsTotal}</span>
+              <span>💪 ${dayStats.workoutsHit}/${dayStats.workoutsTotal}</span>
+              <span>😴 ${state.sleep[dayKey] === 'done' ? '✓' : state.sleep[dayKey] === 'missed' ? '✗' : '-'}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+      
+      // Get history of past weeks
+      const allWeeks = getAllWeekData();
+      // Filter out current week AND weeks with no actual data
+      const pastWeeks = allWeeks.filter(w => {
+        if (w.weekStart === state.weekStart) return false;
+        // Check if week has any actual data
+        const hasItems = w.items && Object.values(w.items).some(v => v === 'done');
+        const hasWeights = w.weights && Object.values(w.weights).some(v => v);
+        const hasSleep = w.sleep && Object.values(w.sleep).some(v => v === 'done');
+        return hasItems || hasWeights || hasSleep;
+      });
+      
+      let historyHtml = '';
+      if (pastWeeks.length > 0) {
+        historyHtml = `
+          <div class="history-section">
+            <div class="week-breakdown-header" style="background:#0f3460;padding:12px 15px;border-radius:12px 12px 0 0;font-weight:600;">
+              📜 Past Weeks
+            </div>
+            ${pastWeeks.slice(0, 10).map(week => {
+              const weekStart = new Date(week.weekStart + 'T12:00:00');
+              const weekEnd = new Date(week.weekStart + 'T12:00:00');
+              weekEnd.setDate(weekEnd.getDate() + 6);
+              const weekLabel = `${weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${weekEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+              const summary = getWeekSummaryData(week.weekStart, week);
+              return `
+                <div class="history-card">
+                  <div class="history-card-header" onclick="setWeek('${week.weekStart}')">
+                    <span class="week-date">${weekLabel}</span>
+                    <span class="week-weight">${summary.avgWeight ? 'Avg: ' + summary.avgWeight + ' lbs' : ''} ${summary.weightChange ? '(' + (summary.weightChange > 0 ? '+' : '') + summary.weightChange + ')' : ''}</span>
+                  </div>
+                  <div class="history-card-body">
+                    <div class="history-stat ${summary.totalMealsHit >= summary.totalMeals * 0.8 ? 'good' : ''}">
+                      <div class="value">${summary.totalMealsHit}/${summary.totalMeals}</div>
+                      <div>Meals</div>
+                    </div>
+                    <div class="history-stat ${summary.totalWorkoutsHit >= summary.totalWorkouts * 0.8 ? 'good' : ''}">
+                      <div class="value">${summary.totalWorkoutsHit}/${summary.totalWorkouts}</div>
+                      <div>Workouts</div>
+                    </div>
+                    <div class="history-stat ${summary.totalCardioHit >= 3 ? 'good' : ''}">
+                      <div class="value">${summary.totalCardioHit}/${summary.totalCardio}</div>
+                      <div>Cardio</div>
+                    </div>
+                    <div class="history-stat ${summary.totalSleepHit >= 6 ? 'good' : ''}">
+                      <div class="value">${summary.totalSleepHit}/7</div>
+                      <div>Sleep</div>
+                    </div>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        `;
+      }
+      
+      return `
+        <div class="summary-tab">
+          <div class="weight-chart">
+            <div class="weight-chart-header">⚖️ This Week's Weight ${weeklyChangeDisplay !== '-' ? '(' + weeklyChangeDisplay + ')' : ''}</div>
+            ${weightChart}
+          </div>
+          
+          <div class="summary-grid">
+            <div class="summary-card ${stats.totalMealsHit >= stats.totalMeals * 0.8 ? 'good' : ''}">
+              <div class="value">${stats.totalMealsHit}/${stats.totalMeals}</div>
+              <div class="label">Meals Hit</div>
+            </div>
+            <div class="summary-card ${stats.totalWorkoutsHit >= stats.totalWorkouts * 0.8 ? 'good' : ''}">
+              <div class="value">${stats.totalWorkoutsHit}/${stats.totalWorkouts}</div>
+              <div class="label">Workout Exercises</div>
+            </div>
+            <div class="summary-card ${stats.totalCardioHit >= 3 ? 'good' : ''}">
+              <div class="value">${stats.totalCardioHit}/${stats.totalCardio}</div>
+              <div class="label">Cardio Sessions</div>
+            </div>
+            <div class="summary-card ${stats.totalSleepHit >= 6 ? 'good' : ''}">
+              <div class="value">${stats.totalSleepHit}/7</div>
+              <div class="label">Nights 7+ hrs</div>
+            </div>
+          </div>
+          
+          <div class="week-breakdown">
+            <div class="week-breakdown-header">📅 Daily Breakdown</div>
+            ${weekBreakdown}
+          </div>
+          
+          ${historyHtml}
+          
+          <div class="section" style="margin-top:20px;">
+            <div class="section-header">
+              <span>📈 Strength Progress</span>
+            </div>
+            <div class="strength-progress">
+              ${renderStrengthProgress()}
+            </div>
+          </div>
+          
+          <div class="section" style="margin-top:20px;">
+            <div class="section-header">
+              <span>📉 Weight Loss Progress (Last 8 Weeks)</span>
+            </div>
+            <div class="weight-loss-chart">
+              ${renderWeightLossChart()}
+            </div>
+          </div>
+          
+          <button class="reset-btn" onclick="resetWeek()">Reset This Week</button>
+        </div>
+      `;
+    }
+    
+    function render() {
+      const weekStartDate = new Date(state.weekStart + 'T12:00:00');
+      const weekEnd = new Date(state.weekStart + 'T12:00:00');
+      weekEnd.setDate(weekEnd.getDate() + 6);
+      const weekLabel = `${weekStartDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${weekEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+      
+      const tabs = days.map(dayKey => {
+        const stats = getDayStats(dayKey);
+        const pct = stats.mealsTotal > 0 ? Math.round((stats.mealsHit / stats.mealsTotal) * 100) : 0;
+        return `
+          <div class="tab ${state.currentTab === dayKey ? 'active' : ''}" onclick="state.currentTab='${dayKey}';render()">
+            ${dayLabels[days.indexOf(dayKey)]}
+            <div class="day-status">${pct}%</div>
+          </div>
+        `;
+      }).join('') + `
+        <div class="tab ${state.currentTab === 'summary' ? 'active' : ''}" onclick="state.currentTab='summary';render()">
+          📊
+          <div class="day-status">Summary</div>
+        </div>
+      `;
+      
+      let content = '';
+      if (state.currentTab === 'summary') {
+        content = renderSummary();
+      } else {
+        content = renderDayContent(state.currentTab);
+      }
+      
+      document.getElementById('app').innerHTML = `
+        <div class="header">
+          <h1>Weekly Fitness Tracker</h1>
+          <div class="week-selector">
+            <button onclick="changeWeek(-1)" style="background:none;border:none;color:white;font-size:1.2rem;cursor:pointer">◀</button>
+            <input type="date" value="${state.weekStart}" onchange="setWeek(this.value)">
+            <button onclick="changeWeek(1)" style="background:none;border:none;color:white;font-size:1.2rem;cursor:pointer">▶</button>
+          </div>
+        </div>
+        <div class="tabs">${tabs}</div>
+        <div class="content">${content}</div>
+      `;
+    }
+    
+    // Initialize
+    try {
+      loadState();
+      render();
+    } catch (e) {
+      document.getElementById('app').innerHTML = '<div style="padding:20px;color:white;font-size:14px;"><strong>Error:</strong> ' + e.message + '<br><br><pre>' + e.stack + '</pre></div>';
+    }
+  </script>
+</body>
+</html>
